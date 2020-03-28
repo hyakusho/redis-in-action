@@ -2,6 +2,7 @@
 
 ## セットアップ
 ```
+% cp .env.default .env
 % docker-compose build
 % docker-compose up -d
 % docker-compose exec python python src/ch01.py
