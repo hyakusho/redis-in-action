@@ -1,0 +1,27 @@
+version: "3.7"
+services:
+  redis:
+    image: redis:5.0.8-alpine3.11
+    container_name: "redis"
+    ports:
+      - $DOCKER_REDIS_PORT:6379
+    volumes:
+      - type: volume
+        source: redis
+        target: /data
+  python:
+    build: .
+    container_name: "python"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_DB=15
+    tty: true
+    volumes:
+      - type: bind
+        source: ./src
+        target: /app/src
+        consistency: cached
+volumes:
+  redis:
