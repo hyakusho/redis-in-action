@@ -386,8 +386,7 @@ if __name__ == '__main__':
     conn = redis.Redis()
     run_pubsub()
 ```
-### その他
-#### ソート
+### ソート
 - SORT source-key [BY pattern] [LIMIT offset count] [GET pattern [GET pattern ...]] [ASC|DESC] [ALPHA] [STORE dest-key]
 ```
 >>> conn.rpush('sort-input', 23, 15, 110, 7)
@@ -437,7 +436,7 @@ if 1:
         threading.Thread(target=trans).start()
     time.sleep(.5)
 ```
-#### キーの有効期限
+### キーの有効期限
 - PERSIST key-name
 - TTL key-name
 - EXPIRE key-name seconds
@@ -459,4 +458,49 @@ True
 >>> conn.expire('key', 100); conn.ttl('key')
 True
 100
+```
+### スナップショット
+- BGSAVE
+- SAVE
+### 追記専用ファイル (AOF)
+- BGREWRITEAOF
+### レプリケーション (スレーブ側)
+- SLAVEOF host port
+### 各種情報
+- INFO
+
+## データの永続化
+### スナップショット
+```
+# redis.conf
+save 60 1000                      # 60秒間に1000回更新があればスナップショットを取る
+stop-writes-on-bgsave-error no
+rdbcompression yes
+dbfilename dump.rdb               # スナップショットのファイル名
+```
+
+### 追記専用ファイル (AOF)
+```
+# redis.conf
+appendonly yes                    # 追記専用ファイル有効 (yes|no)
+appendfsync everysec              # 同期の頻度 (always|everysync|no)
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 100   # BGREWRITEAOFの自動実行を有効にする (前回より100%以上大きくなったら実行)
+auto-aof-rewrite-min-size 64mb    # BGREWRITEAOFの自動実行を有効にする (AOFが少なくとも64MBになったら実行)
+```
+
+## レプリケーション
+
+## システムエラーの処理
+### スナップショットと追記専用ファイルのチェック
+```
+/data # redis-check-aof
+Usage: redis-check-aof [--fix] <file.aof>
+/data # redis-check-rdb
+Usage: redis-check-rdb <rdb-file-name>
+```
+
+## トランザクション
+```
+/data # redis-benchmark -c 1 -q
 ```

@@ -1,19 +1,40 @@
 version: "3.7"
 services:
-  redis:
-    image: redis:5.0.8-alpine3.11
-    container_name: "redis"
+  redis-master:
+    build: ./docker/redis
+    command: ["redis-server", "/usr/local/etc/redis/redis-master.conf"]
     ports:
-      - $DOCKER_REDIS_PORT:6379
+      - $DOCKER_REDIS_MASTER_PORT:6379
     volumes:
       - type: volume
-        source: redis
+        source: redis-master
+        target: /data
+  redis-slave0:
+    build: ./docker/redis
+    command: ["redis-server", "/usr/local/etc/redis/redis-slave.conf"]
+    depends_on:
+      - redis-master
+    ports:
+      - $DOCKER_REDIS_SLAVE0_PORT:6379
+    volumes:
+      - type: volume
+        source: redis-slave0
+        target: /data
+  redis-slave1:
+    build: ./docker/redis
+    command: ["redis-server", "/usr/local/etc/redis/redis-slave.conf"]
+    depends_on:
+      - redis-master
+    ports:
+      - $DOCKER_REDIS_SLAVE1_PORT:6379
+    volumes:
+      - type: volume
+        source: redis-slave1
         target: /data
   python:
-    build: .
-    container_name: "python"
+    build: ./docker/python
     depends_on:
-      - redis
+      - redis-master
     environment:
       - REDIS_HOST=redis
       - REDIS_DB=15
@@ -24,4 +45,6 @@ services:
         target: /app/src
         consistency: cached
 volumes:
-  redis:
+  redis-master:
+  redis-slave0:
+  redis-slave1:
